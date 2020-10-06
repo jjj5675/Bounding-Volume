@@ -13,10 +13,10 @@ namespace CK
 	private:
 		enum SubNames
 		{
-			TopLeft = 0,
-			TopRight = 1,
-			BottomRight = 2,
-			BottomLeft = 3
+			NorthWest = 0,
+			NorthEast = 1,
+			SouthWest = 2,
+			SouthEast = 3
 		};
 
 		struct TreeNode
@@ -31,11 +31,11 @@ namespace CK
 	public:
 		bool Insert(const std::string& InKey, const CK::Rectangle& InBound);
 		//void Clear();
-		void Query(const CK::Rectangle& InRectangleToQuery, std::vector<std::string>& InOutItems) const;
+		void QueryRange(const CK::Rectangle& InRectangleToQuery, std::vector<std::string>& InOutItems) const;
 		bool HasItem() { return !IsLeaf; }
 
 	private:
-		void Split();
+		void SubDivide();
 		bool Contains(const CK::Rectangle& InBox) const;
 		QuadTree* FindSubTree(const CK::Rectangle& InBound);
 

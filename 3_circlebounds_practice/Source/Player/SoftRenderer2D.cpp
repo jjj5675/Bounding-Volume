@@ -93,7 +93,6 @@ void SoftRenderer::Render2D()
 	cameraRectangleBoundWorld.Min += cameraPos;
 	cameraRectangleBoundWorld.Max += cameraPos;
 
-
 	// 의도적으로 짧게 설정
 	//cameraCircleBound.Radius = 250.f;
 	//cameraRectangleBound.Min = Vector2(-150.f, -100.f);
@@ -101,7 +100,7 @@ void SoftRenderer::Render2D()
 
 	// 쿼드트리에서 카메라 범위와 겹치는 오브젝트들 추려내기
 	std::vector <std::string> goKeys;
-	_GameEngine.GetQuadTreeRoot().Query(cameraRectangleBoundWorld, goKeys);
+	_GameEngine.GetQuadTreeRoot().QueryRange(cameraRectangleBoundWorld, goKeys);
 	goKeys.push_back(GameEngine::PlayerKey);
 	culledObjectCountByQuadTree = totalObjectCount - goKeys.size();
 

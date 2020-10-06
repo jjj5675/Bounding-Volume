@@ -106,7 +106,7 @@ bool GameEngine::LoadScene()
 	std::uniform_real_distribution<float> dist(-500.f, 500.f);
 
 	// 100개의 배경 게임 오브젝트 생성
-	for (int i = 0; i < 100; ++i)
+	for (int i = 0; i < 500; ++i)
 	{
 		char name[64];
 		std::snprintf(name, sizeof(name), "GameObject%d", i);
