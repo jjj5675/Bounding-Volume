@@ -120,5 +120,31 @@ bool GameEngine::LoadScene()
 		}
 	}
 
+	//충분히 넓은 영역 설정
+	static Vector2 totalAreaExtent = Vector2::One * 50000.f;
+	static CK::Rectangle totalArea(-totalAreaExtent, totalAreaExtent);
+	_QuadTreeRoot = QuadTree(totalArea, 1, 10, 10);
+
+	for (auto const& go : _GameObjects)
+	{
+		std::string key = go.get()->GetName();
+		if (key == GameEngine::PlayerKey)
+		{
+			continue;
+		}
+
+		//오브젝트로부터 바운딩 박스와 모델링 행렬 가져오기
+		GameObject* gameObject = go.get();
+		const Mesh& mesh = GetMesh(gameObject->GetMeshKey());
+		Transform& transform = gameObject->GetTransform();
+		Matrix3x3 modelingMat = transform.GetModelingMatrix();
+
+		Rectangle roRectangleBound(mesh.GetRectangleBound());
+		roRectangleBound.Min = modelingMat * roRectangleBound.Min;
+		roRectangleBound.Max = modelingMat * roRectangleBound.Max;
+
+		_QuadTreeRoot.Insert(key, roRectangleBound);
+	}
+
 	return true;
 }

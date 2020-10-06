@@ -82,21 +82,35 @@ void SoftRenderer::Render2D()
 	size_t totalObjectCount = _GameEngine.GetGameObject().size();
 	size_t culledByCircleObjectCount = 0;
 	size_t culledByRectangleObjectCount = 0;
+	size_t culledObjectCountByQuadTree = 0;
 	size_t renderingObjectCount = 0;
 
-	// 카메라의 현재 원 바운딩
-	Circle cameraCircleBound(_GameEngine.GetCamera().GetCircleBound());
+	// 카메라의 바운딩
+	//Circle cameraCircleBound(_GameEngine.GetCamera().GetCircleBound());
 	CK::Rectangle cameraRectangleBound(_GameEngine.GetCamera().GetRectangleBound());
+	CK::Rectangle cameraRectangleBoundWorld(cameraRectangleBound);
+	Vector2 cameraPos = _GameEngine.GetCamera().GetTransform().GetPosition();
+	cameraRectangleBoundWorld.Min += cameraPos;
+	cameraRectangleBoundWorld.Max += cameraPos;
+
 
 	// 의도적으로 짧게 설정
-	cameraCircleBound.Radius = 250.f;
-	cameraRectangleBound.Min = Vector2(-150.f, -100.f);
-	cameraRectangleBound.Max = Vector2(150.f, 100.f);
+	//cameraCircleBound.Radius = 250.f;
+	//cameraRectangleBound.Min = Vector2(-150.f, -100.f);
+	//cameraRectangleBound.Max = Vector2(150.f, 100.f);
+
+	// 쿼드트리에서 카메라 범위와 겹치는 오브젝트들 추려내기
+	std::vector <std::string> goKeys;
+	_GameEngine.GetQuadTreeRoot().Query(cameraRectangleBoundWorld, goKeys);
+	goKeys.push_back(GameEngine::PlayerKey);
+	culledObjectCountByQuadTree = totalObjectCount - goKeys.size();
 
 	// 랜덤하게 생성된 모든 게임 오브젝트들
-	for (auto it = _GameEngine.GoBegin(); it != _GameEngine.GoEnd(); ++it)
+		//for (auto it = _GameEngine.GoBegin(); it != _GameEngine.GoEnd(); ++it)
+	for (const auto& key : goKeys)
 	{
-		GameObject& gameObject = *it->get();
+		//GameObject& gameObject = *it->get();
+		GameObject& gameObject = _GameEngine.FindGameObject(key);
 		const Mesh& mesh = _GameEngine.GetMesh(gameObject.GetMeshKey());
 		Transform& transform = gameObject.GetTransform();
 		Matrix3x3 finalMat = viewMat * transform.GetModelingMatrix();
@@ -106,30 +120,31 @@ void SoftRenderer::Render2D()
 		size_t triangleCount = indexCount / 3;
 
 		// 오브젝트의 원 바운딩 볼륨
-		Circle goCircleBound(mesh.GetCircleBound());
+		//Circle goCircleBound(mesh.GetCircleBound());
+
 		//오브젝트의 박스 바운딩 볼륨
-		CK::Rectangle goRectangleBound(mesh.GetRectangleBound());
+		//CK::Rectangle goRectangleBound(mesh.GetRectangleBound());
 
 		// 바운딩 볼륨의 중심 이동, 반지름 크기
-		goCircleBound.Center = finalMat * goCircleBound.Center;
-		goCircleBound.Radius = goCircleBound.Radius * transform.GetScale().Max();
+		//goCircleBound.Center = finalMat * goCircleBound.Center;
+		//goCircleBound.Radius = goCircleBound.Radius * transform.GetScale().Max();
 
 		//사각형 영역을 뷰좌표계로 변환
-		goRectangleBound.Min = finalMat * goRectangleBound.Min;
-		goRectangleBound.Max = finalMat * goRectangleBound.Max;
+		//goRectangleBound.Min = finalMat * goRectangleBound.Min;
+		//goRectangleBound.Max = finalMat * goRectangleBound.Max;
 
 		// 두 바운딩 볼륨이 겹치지 않으면 그리기에서 제외
-		if (!cameraCircleBound.Intersect(goCircleBound))
-		{
-			culledByCircleObjectCount++;
-			continue;
-		}
+		//if (!cameraCircleBound.Intersect(goCircleBound))
+		//{
+		//	culledByCircleObjectCount++;
+		//	continue;
+		//}
 
-		if (!cameraRectangleBound.Intersect(goRectangleBound))
-		{
-			culledByRectangleObjectCount++;
-			continue;
-		}
+		//if (!cameraRectangleBound.Intersect(goRectangleBound))
+		//{
+		//	culledByRectangleObjectCount++;
+		//	continue;
+		//}
 
 		renderingObjectCount++;
 
@@ -159,8 +174,9 @@ void SoftRenderer::Render2D()
 	}
 
 	_RSI->PushStatisticText("Total Objects : " + std::to_string(totalObjectCount));
-	_RSI->PushStatisticText("Culled by Circle : " + std::to_string(culledByCircleObjectCount));
-	_RSI->PushStatisticText("Culled by Rectangle : " + std::to_string(culledByRectangleObjectCount));
+	//_RSI->PushStatisticText("Culled by Circle : " + std::to_string(culledByCircleObjectCount));
+	//_RSI->PushStatisticText("Culled by Rectangle : " + std::to_string(culledByRectangleObjectCount));
+	_RSI->PushStatisticText("Culled by QuadTree : " + std::to_string(culledObjectCountByQuadTree));
 	_RSI->PushStatisticText("Rendering Objects : " + std::to_string(renderingObjectCount));
 
 }
